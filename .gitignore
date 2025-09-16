@@ -23,3 +23,5 @@ results/1KG/noneur/wgan/output_dir
 
 results/UKBB
 aux/UKBB*
+
+pc/demo/data/500000_train.txt
