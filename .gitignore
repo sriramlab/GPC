@@ -25,3 +25,6 @@ results/UKBB
 aux/UKBB*
 
 pc/demo/data/500000_train.txt
+
+aux/b38_unrelated_real.hapt
+aux/b38_real.hapt

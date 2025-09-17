@@ -2,13 +2,14 @@ import pandas as pd
 import numpy as np
 
 # --- Input/Output ---
-infile = "/scratch2/prateek/genetic_pc/data/ukbb/all.txt"   # your haplotype file
-outfile = "snp_mac_maf.tsv" # output file
+data = "b38_unrelated"
+infile = f"/scratch2/prateek/genetic_pc_github/aux/{data}_real.hapt"   # your haplotype file
+outfile = f"../{data}_mac_maf.txt" # output file
 
 # --- Load haplotypes ---
 # First two columns are text (metadata), so skip them
 df = pd.read_csv(infile, sep=r"\s+", header=None)
-haplotypes = df.iloc[:, 1:].to_numpy()  # take all columns from the 3rd onward
+haplotypes = df.iloc[:, 2:].to_numpy()  # take all columns from the 3rd onward
 
 # --- Calculate MAC and MAF ---
 num_haplotypes = haplotypes.shape[0]
