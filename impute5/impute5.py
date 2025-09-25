@@ -248,7 +248,7 @@ def main():
 
     buffer_region = f"{chrnum}:{idx1}-{idx2}"
 
-    os.environ['BCFTOOLS_PLUGINS'] = '/u/scratch/p/panand2/bcftools/plugins'
+    os.environ['BCFTOOLS_PLUGINS'] = '/scrach2/prateek/bcftools/plugins'
 
     process_plink_data(folder, plink_file_train_prefix)
 

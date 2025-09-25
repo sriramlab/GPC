@@ -3,7 +3,7 @@ import numpy as np
 split = '8020'
 method = 'hclt'
 
-filename = f"results/1KG/{split}/{method}/10K_{method}_{split}_samples"
+filename = f"../../results/1KG/{split}/{method}/10K_{method}_{split}_samples"
 arr = np.loadtxt(f'{filename}.txt', dtype=int)
 print(arr.shape)
 

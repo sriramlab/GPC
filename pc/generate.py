@@ -36,7 +36,7 @@ np.random.seed(1)
 print(device)
 print(os.getenv("TRITON_CACHE_DIR"))
 
-ns = juice.load(f'demo/pc_{snps}-{latents}_{num_epochs}epochs_ps{ps}.jpc')
+ns = juice.load(f'/scratch2/prateek/genetic_pc_github/results/1KG/b38/hclt/pc_14973_8020_4006-128_5000epochs_ps0.005.jpc')
 pc = juice.compile(ns)
 pc.to(device)
 
@@ -59,4 +59,4 @@ np_arrays = [tensor.numpy() for tensor in samples]
 d = np.vstack(np_arrays)
 
 # Save
-np.savetxt(f'demo/{snps}_SNP_HCLT_AG_{latents}_{num_epochs}epochs_ps{ps}.txt', d, fmt='%d')
+np.savetxt(f'/scratch2/prateek/genetic_pc_github/results/1KG/b38/hclt/b38_hclt_8020_samples.txt', d, fmt='%d')

@@ -3,7 +3,7 @@ import random
 import vcfpy
 import argparse
 
-def create_vcf_from_legend(haplotype_array, snp_legend_file, output_file='output.vcf', reference='hg37'):
+def create_vcf_from_legend(haplotype_array, snp_legend_file, output_file='output.vcf', reference='hg38'):
     """
     Create a VCF file using a haplotype array and a SNP legend file.
 
@@ -24,6 +24,12 @@ def create_vcf_from_legend(haplotype_array, snp_legend_file, output_file='output
             ref_allele = parts[2]
             alt_allele = parts[3]
             chrom = snp_id.split(':')[0]
+
+            # Remove "chr" prefix if present
+            if chrom.lower().startswith("chr"):
+                chrom = chrom[3:]
+                snp_id = snp_id.replace("chr", "", 1)  # remove only leading "chr"
+
             snp_data.append((chrom, position, snp_id, ref_allele, alt_allele))
     
     # Validate haplotype array size matches the SNP legend
@@ -49,8 +55,8 @@ def create_vcf_from_legend(haplotype_array, snp_legend_file, output_file='output
     vcf_body = []
     for i, (chrom, position, snp_id, ref_allele, alt_allele) in enumerate(snp_data):
         # Format genotypes for each sample (convert float to integer for 0/1)
-        genotypes_str = "\t".join([(str(int(g))) for g in haplotype_array[i]])                          # for creating test VCF files
-        # genotypes_str = "\t".join([(str(int(g)) + "|" + str(int(g))) for g in haplotype_array[i]])    # for creating ref. panel VCF files that are diploid homozygous to work with Impute5 haploid mode
+        # genotypes_str = "\t".join([(str(int(g))) for g in haplotype_array[i]])                          # for creating test VCF files
+        genotypes_str = "\t".join([(str(int(g)) + "|" + str(int(g))) for g in haplotype_array[i]])    # for creating ref. panel VCF files that are diploid homozygous to work with Impute5 haploid mode
         
         # VCF data line
         vcf_line = f"{chrom}\t{position}\t{snp_id}\t{ref_allele}\t{alt_allele}\t.\t.\tPR\tGT\t{genotypes_str}"
@@ -65,12 +71,12 @@ def create_vcf_from_legend(haplotype_array, snp_legend_file, output_file='output
 
 method = "hclt"
 split = "8020"
-file = f"results/1KG/{split}/{method}/10K_{method}_{split}_samples"
+file = f"../../results/b38/{split}/{method}/b38_{method}_{split}_samples"
 hap_file = f"{file}.txt"
 vcf_file = f"{file}.vcf"
 
 haplotype_array = np.loadtxt(hap_file)
-snp_legend_file = '../10K_SNP.legend'
+snp_legend_file = '../b38_SNP.legend'
 output_vcf_file = vcf_file
 
 create_vcf_from_legend(haplotype_array.T, snp_legend_file, output_file=output_vcf_file)

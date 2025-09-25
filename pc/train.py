@@ -39,25 +39,25 @@ def vcf_to_haplotype_array(vcf_file):
     # Return as-is (rows = SNPs, columns = samples)
     return haplotype_array.T
 
-snps = "805"
+snps = "14973"
 amt = 4006
 split = f'8020_{amt}'
-latents = 16
+latents = 64
 ps = 0.005
-num_epochs = 100
+num_epochs = 5000
 batch_size = 256
 
 
 print("Number of CUDA devices:", torch.cuda.device_count())
 print(torch.version.cuda)
 
-device = torch.device("cuda:0")
+device = torch.device("cuda:1")
 np.random.seed(1)
 
 print(device)
 
-train_data = np.loadtxt(f"demo/data/805_train.txt", dtype=np.int8, delimiter=' ')
-valid_data = np.loadtxt(f"demo/data/805_test.txt", dtype=np.int8, delimiter=' ')
+train_data = np.loadtxt(f"../results/b38/8020/data/b38_train.txt", dtype=np.int8, delimiter=' ')
+valid_data = np.loadtxt(f"../results/b38/8020/data/b38_test.txt", dtype=np.int8, delimiter=' ')
 
 train_data = torch.tensor(train_data, dtype=torch.long)
 valid_data = torch.tensor(valid_data, dtype=torch.long)
@@ -94,7 +94,7 @@ with torch.cuda.device(pc.device):
         lls = pc(x, record_cudagraph = False)
         lls.mean().backward()
 
-    log_filename = f"demo/{snps}_{split}_{latents}_{num_epochs}epochs_ps{ps}.log"
+    log_filename = f"../results/b38/8020/hclt/{snps}_{split}_{latents}_{num_epochs}epochs_ps{ps}.log"
     with open(log_filename, "w") as log_file:
         for epoch in range(1, num_epochs+1):
             t0 = time.time()
@@ -132,5 +132,5 @@ with torch.cuda.device(pc.device):
             log_file.write(log_line + "\n")  # Save to log file
             log_file.flush()  # Ensure logs are written in real-time
 
-            if epoch % 100 == 0:
-                juice.save(f'demo/pc_{snps}_{split}-{latents}_{epoch}epochs_ps{ps}.jpc', pc)
+            if epoch % 5000 == 0:
+                juice.save(f'../results/b38/8020/hclt/pc_{snps}_{split}-{latents}_{epoch}epochs_ps{ps}.jpc', pc)
