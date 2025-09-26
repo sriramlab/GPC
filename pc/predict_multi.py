@@ -114,10 +114,10 @@ def run_r2_on_data_with_mask(valid_data_tensor, pc_model, mask_indices_file):
         probs = lls[:, :, :]
 
         # Fill expected counts for masked features only
-        for idx, feature_pos in enumerate(mask_indices.tolist()):
+        for feature_pos in mask_indices:
             original = data[:, feature_pos]
-            prob_0 = probs[:, idx, 0]
-            prob_1 = probs[:, idx, 1]
+            prob_0 = probs[:, feature_pos, 0]
+            prob_1 = probs[:, feature_pos, 1]
             expected_counts = prob_0 * 0 + prob_1 * 1
 
             all_expected_counts[batch_start:batch_end, feature_pos] = expected_counts.detach().cpu()
@@ -131,50 +131,50 @@ def run_r2_on_data_with_mask(valid_data_tensor, pc_model, mask_indices_file):
     return mask_indices, r2s
 
 # === Load and compile PC model ===
-pc_path = '/scratch2/prateek/genetic_pc_github/pc/demo/pc_805_8020_4006-16_100epochs_ps0.005.jpc'
+pc_path = '/scratch2/prateek/genetic_pc_github/results/b38/8020/hclt/pc_14973_8020_4006-128_5000epochs_ps0.01.jpc'
 pc_model = juice.compile(juice.load(pc_path))
 pc_model.to(device)
 
 # === Load mask indices once ===
-mask_file = "/scratch2/prateek/genetic_pc_github/pc/demo/data/index.txt"
+mask_file = "/scratch2/prateek/genetic_pc_github/results/b38/missing_indices.txt"
 with open(mask_file, "r") as f:
     mask_indices = [int(line.strip()) for line in f if line.strip()]
 mask_indices = torch.tensor(mask_indices, dtype=torch.long)
 
 # === Step 1: Compute base R2 ===
 print("Computing base R2...")
-base_data_path = '/scratch2/prateek/genetic_pc_github/pc/demo/data/805_test.txt'
+base_data_path = '/scratch2/prateek/genetic_pc_github/results/b38/8020/data/b38_test.txt'
 valid_data = np.loadtxt(base_data_path, dtype=np.int8, delimiter=' ')
 valid_data_tensor = torch.tensor(valid_data, dtype=torch.long)
 
 _, r2_base = run_r2_on_data_with_mask(valid_data_tensor, pc_model, mask_file)
 
 # === Step 2: Compute bootstrap R2s ===
-# bootstrap_dir = '/scratch2/prateek/genetic_pc_github/results/b38/8020/data/test_bootstraps'
-# r2_boots = []
+bootstrap_dir = '/scratch2/prateek/genetic_pc_github/results/b38/8020/data/test_bootstraps'
+r2_boots = []
 
-# for boot_id in range(1, 11):
-#     print(f"Processing bootstrap_{boot_id}.vcf")
-#     file_path = f"{bootstrap_dir}/bootstrap_{boot_id}.vcf"
-#     valid_data = vcf_to_haplotype_array(file_path)
-#     valid_data_tensor = torch.tensor(valid_data, dtype=torch.long)
-#     _, r2_boot = run_r2_on_data_with_mask(valid_data_tensor, pc_model, mask_file)
-#     r2_boots.append(r2_boot)
+for boot_id in range(1, 11):
+    print(f"Processing bootstrap_{boot_id}.vcf")
+    file_path = f"{bootstrap_dir}/bootstrap_{boot_id}.vcf"
+    valid_data = vcf_to_haplotype_array(file_path)
+    valid_data_tensor = torch.tensor(valid_data, dtype=torch.long)
+    _, r2_boot = run_r2_on_data_with_mask(valid_data_tensor, pc_model, mask_file)
+    r2_boots.append(r2_boot)
 
-# r2_boot_array = np.stack(r2_boots, axis=-1)  # shape (num_masked_features, 10)
+r2_boot_array = np.stack(r2_boots, axis=-1)  # shape (num_masked_features, 10)
 
-# # === Step 3: Build final DataFrame ===
-# output_df = pd.DataFrame({"Index": mask_indices.numpy(), "R2_base": r2_base})
-# for boot_id in range(1, 11):
-#     output_df[f"R2_boot_{boot_id}"] = r2_boot_array[:, boot_id - 1]
+# === Step 3: Build final DataFrame ===
+output_df = pd.DataFrame({"Index": mask_indices.numpy(), "R2_base": r2_base})
+for boot_id in range(1, 11):
+    output_df[f"R2_boot_{boot_id}"] = r2_boot_array[:, boot_id - 1]
 
-# output_df.to_csv("r2_b38_multi.csv", index=False)
+output_df.to_csv("r2_b38_multi_0.01.csv", index=False)
 
 # === Step 4: Print averages ===
 mean_base = np.mean(r2_base)
-# mean_boot = np.mean(r2_boot_array)
-# sem_boot = np.std(np.mean(r2_boot_array, axis=0), ddof=1)
-# ci_boot = 1.96 * sem_boot
+mean_boot = np.mean(r2_boot_array)
+sem_boot = np.std(np.mean(r2_boot_array, axis=0), ddof=1)
+ci_boot = 1.96 * sem_boot
 
 print(f"\nMean base R2 = {mean_base:.4f}")
-# print(f"Bootstrap mean R2 = {mean_boot:.4f} ± {ci_boot:.4f} (95% CI)")
+print(f"Bootstrap mean R2 = {mean_boot:.4f} ± {ci_boot:.4f} (95% CI)")
