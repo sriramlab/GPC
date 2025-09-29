@@ -14,8 +14,9 @@ threads = int(sys.argv[2])
 train_prefix = str(sys.argv[3])
 test_prefix = str(sys.argv[4])
 chrnumber = int(sys.argv[5])
-method_full = str(sys.argv[6])
+out = str(sys.argv[6])
 snp_index_file = str(sys.argv[7])
+info_file = str(sys.argv[8])
 # %%
 def process_plink_data(folder, plink_file_prefix):
     vcf_file = f"{folder}/{plink_file_prefix}.vcf"
@@ -240,11 +241,11 @@ def run_imputation_and_eval(vcf_file, snp_indices_to_drop, rs_ids, chrnum, folde
     buffer_region = f"{chrnum}:{idx1}-{idx2}"
     snp_set = [rs_ids[idx] for idx in snp_indices_to_drop]
 
-    # modify plink data
+    print(len(snp_set))
+
     process_plink_data(folder, plink_file_train_prefix)
     process_plink_data_with_drop(folder, plink_file_test_prefix, snp_set, temp_dir)
 
-    # run imputation
     subprocess.run([
         '/scratch2/prateek/impute5_v1.2.0/impute5_v1.2.0_static',
         '--h', f'{folder}/{plink_file_train_prefix}_AC.bcf',
@@ -258,28 +259,20 @@ def run_imputation_and_eval(vcf_file, snp_indices_to_drop, rs_ids, chrnum, folde
         '--threads', f'{threads}'
     ])
 
-    # extract results for the whole set
     test_arrays = extract_test_genotype_array(vcf_file, snp_set)
     results = extract_imputed_genotype_array(f'{temp_dir}/imputed_custom.vcf', snp_set, test_arrays, num_samples)
 
-    r2_list = []
-    r2_geno_list = []
-
+    per_snp_r2 = {}
     for snp in snp_set:
         test_genotype_array = test_arrays[snp]
-        imputed_genotype_array = results[snp][0]
-        prob1 = results[snp][1]
+        imputed_genotype_array, prob1, _ = results[snp]
 
         r2 = compute_r_squared_old(test_genotype_array, prob1)
-        r2_geno = compute_r_squared_old(test_genotype_array, imputed_genotype_array)
+        per_snp_r2[snp] = r2
 
-        r2_list.append(r2)
-        r2_geno_list.append(r2_geno)
+    print(len(per_snp_r2))
 
-    # return averages
-    avg_r2 = np.mean(np.nan_to_num(r2_list, nan=0.0))
-    avg_r2_geno = np.mean(np.nan_to_num(r2_geno_list, nan=0.0))
-    return avg_r2, avg_r2_geno
+    return per_snp_r2
 
 
 def main():
@@ -293,7 +286,8 @@ def main():
     base_vcf_file = f"{folder}/{plink_file_test_prefix}.vcf"
     rs_ids = extract_rs_ids_from_vcf(base_vcf_file)
 
-    # Load SNP indices to drop from file
+    print(len(rs_ids))
+
     with open(snp_index_file, "r") as f:
         snp_indices_to_drop = [int(line.strip()) for line in f if line.strip()]
 
@@ -301,45 +295,73 @@ def main():
 
     os.environ['BCFTOOLS_PLUGINS'] = '/scratch2/prateek/bcftools/plugins'
 
-    # === Run base test file ===
+    # Load MAF info
+    maf_df = pd.read_csv(info_file, sep="\t", header=None, names=["SNP", "MAF"])
+    maf_map = dict(zip(maf_df["SNP"], maf_df["MAF"]))
+
+    # === Base run ===
     print("Running on base test file...")
-    base_r2, base_r2_geno = run_imputation_and_eval(
+    base_r2s = run_imputation_and_eval(
         base_vcf_file, snp_indices_to_drop, rs_ids, chrnum, folder,
         plink_file_train_prefix, plink_file_test_prefix, temp_dir
     )
 
-    # === Run on bootstraps ===
+    exit()
+    # === Bootstraps ===
     bootstrap_dir = os.path.join(folder, "data/test_bootstraps")
-    bootstrap_r2s = []
-    bootstrap_r2_genos = []
-
+    bootstrap_r2s_list = []  # list of dicts
     for i in range(1, 11):
         boot_vcf = os.path.join(bootstrap_dir, f"bootstrap_{i}.vcf")
         plink_file_test_prefix = f"data/test_bootstraps/bootstrap_{i}"
         print(f"Running on {boot_vcf}...")
-        r2, r2_geno = run_imputation_and_eval(
+        r2s = run_imputation_and_eval(
             boot_vcf, snp_indices_to_drop, rs_ids, chrnum, folder,
             plink_file_train_prefix, plink_file_test_prefix, temp_dir
         )
-        bootstrap_r2s.append(r2)
-        bootstrap_r2_genos.append(r2_geno)
+        bootstrap_r2s_list.append(r2s)
 
-    # === Compute statistics ===
-    mean_boot_r2 = np.mean(bootstrap_r2s)
-    sem_boot_r2 = np.std(bootstrap_r2s, ddof=1)
+    # === Combine per-SNP results ===
+    rows = []
+    for snp, base_r2 in base_r2s.items():
+        row = {
+            "SNP Set": snp,
+            "R2": base_r2,
+            "MAF": maf_map.get(snp, np.nan)
+        }
+        for j, boot_dict in enumerate(bootstrap_r2s_list, 1):
+            row[f"R2_boot_{j}"] = boot_dict.get(snp, np.nan)
+        rows.append(row)
+
+    df = pd.DataFrame(rows, columns=[
+        "SNP Set", "R2",
+        "R2_boot_1","R2_boot_2","R2_boot_3","R2_boot_4","R2_boot_5",
+        "R2_boot_6","R2_boot_7","R2_boot_8","R2_boot_9","R2_boot_10",
+        "MAF"
+    ])
+
+    out_csv = f"multi_results/{out}_chr{chrnum}_results.csv"
+    df.to_csv(out_csv, index=False)
+    print(f"\nSaved per-SNP results to {out_csv}")
+
+    # === Compute summary stats (mean across SNPs) ===
+    # Base R²
+    base_r2_mean = np.nanmean(list(base_r2s.values()))
+
+    # Bootstraps R² mean
+    boot_means = []
+    for boot_dict in bootstrap_r2s_list:
+        boot_mean = np.nanmean(list(boot_dict.values()))
+        boot_means.append(boot_mean)
+
+    mean_boot_r2 = np.mean(boot_means)
+    sem_boot_r2 = np.std(boot_means, ddof=1)
     ci_boot_r2 = 1.96 * sem_boot_r2
 
-    mean_boot_r2_geno = np.mean(bootstrap_r2_genos)
-    sem_boot_r2_geno = np.std(bootstrap_r2_genos, ddof=1)
-    ci_boot_r2_geno = 1.96 * sem_boot_r2_geno
-
     print("\n=== Results ===")
-    print(f"Base R2={base_r2:.4f}, Base R2_geno={base_r2_geno:.4f}")
+    print(f"Base mean R2={base_r2_mean:.4f}")
     print(f"Bootstrap mean R2={mean_boot_r2:.4f} ± {ci_boot_r2:.4f} (95% CI)")
-    print(f"Bootstrap mean R2_geno={mean_boot_r2_geno:.4f} ± {ci_boot_r2_geno:.4f} (95% CI)")
 
     shutil.rmtree(temp_dir)
-
 
 if __name__ == "__main__":
     main()

@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 # --- Input/Output ---
-data = "b38_unrelated"
+data = "10K"
 infile = f"/scratch2/prateek/genetic_pc_github/aux/{data}_real.hapt"   # your haplotype file
 outfile = f"../{data}_mac_maf.txt" # output file
 

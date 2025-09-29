@@ -1,4 +1,4 @@
-vcf_file = "/scratch2/prateek/genetic_pc_github/results/b38/1kGP_high_coverage_Illumina.chr15.filtered_biallelic_snps_region.SNV_INDEL_SV_phased_panel_unrelated_ac20_4988.vcf"
+vcf_file = "/scratch2/prateek/genetic_pc_github/results/b38/1kGP_high_coverage_Illumina.chr15.filtered_unrelated_biallelic_no_duplicates_ac20_4988_snps.vcf"
 legend_file = "/scratch2/prateek/genetic_pc_github/aux/b38_SNP.legend"
 
 with open(vcf_file) as fin, open(legend_file, "w") as fout:

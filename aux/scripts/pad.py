@@ -1,6 +1,6 @@
 split = '8020'
 
-filename = f'../../results/1KG/{split}/data/{split}_train'
+filename = f'../../results/b38/{split}/data/{split}_train'
 input_file = f"{filename}.hapt"
 output_file = f"{filename}_PADDED.hapt"
 target_features = 16383

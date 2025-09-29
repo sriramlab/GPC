@@ -1,6 +1,6 @@
 import gzip
 
-vcf_file = "/scratch2/prateek/genetic_pc_github/results/1KG/b38/1kGP_high_coverage_Illumina.chr15.filtered_biallelic_snps_region.SNV_INDEL_SV_phased_panel.vcf.gz"
+vcf_file = "/scratch2/prateek/genetic_pc_github/results/b38/1kGP_high_coverage_Illumina.chr15.filtered_unrelated_biallelic_no_duplicates_ac20_4988_snps.vcf.gz"
 output_file = "../b38_real.hapt"
 
 with gzip.open(vcf_file, "rt") as f:

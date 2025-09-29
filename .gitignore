@@ -33,5 +33,6 @@ aux/b38_real.hapt
 
 impute5/results
 
-results/b38/8020
-aux/b38_unrelated_filtered_real.hapt
+results/b38
+aux/b38_real_eur.hapt
+aux/b38_real_noneur.hapt
