@@ -21,11 +21,12 @@ from bed_reader import open_bed
 import gc
 from tqdm import tqdm
 
-split = "8020"
-snps = f"805_{split}_4006"
-latents = 16
+data = "b38"
+split = "afr"
+snps = f"14670_{split}_1056"
+latents = 128
 ps = 0.005
-num_epochs = 100
+num_epochs = 5000
 
 print("Number of CUDA devices:", torch.cuda.device_count())
 print(torch.version.cuda)
@@ -36,7 +37,7 @@ np.random.seed(1)
 print(device)
 print(os.getenv("TRITON_CACHE_DIR"))
 
-ns = juice.load(f'/scratch2/prateek/genetic_pc_github/results/1KG/b38/hclt/pc_14973_8020_4006-128_5000epochs_ps0.005.jpc')
+ns = juice.load(f'/scratch2/prateek/genetic_pc_github/results/{data}/{split}/hclt/pc_{snps}-{latents}_{num_epochs}epochs_ps{ps}.jpc')
 pc = juice.compile(ns)
 pc.to(device)
 
@@ -59,4 +60,4 @@ np_arrays = [tensor.numpy() for tensor in samples]
 d = np.vstack(np_arrays)
 
 # Save
-np.savetxt(f'/scratch2/prateek/genetic_pc_github/results/1KG/b38/hclt/b38_hclt_8020_samples.txt', d, fmt='%d')
+np.savetxt(f'/scratch2/prateek/genetic_pc_github/results/{data}/{split}/hclt/{data}_hclt_{split}_samples.txt', d, fmt='%d')

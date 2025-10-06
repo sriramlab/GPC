@@ -28,11 +28,12 @@ aux/UKBB*
 
 pc/demo/data/500000_train.txt
 
-aux/b38_unrelated_real.hapt
-aux/b38_real.hapt
+aux/b38*
 
 impute5/results
 
 results/b38
 aux/b38_real_eur.hapt
 aux/b38_real_noneur.hapt
+
+results/b38/8020/data/test_bootstraps/indices*

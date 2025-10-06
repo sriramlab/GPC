@@ -38,7 +38,7 @@ def vcf_to_haplotype_array(vcf_file):
     # Transpose to get samples as rows, SNPs as columns
     return haplotype_array.T
 
-def create_vcf_from_legend(haplotype_array, snp_legend_file, output_file='output.vcf', reference='hg37'):
+def create_vcf_from_legend(haplotype_array, snp_legend_file, output_file='output.vcf', reference='hg38'):
     """
     Create a VCF file using a haplotype array and a SNP legend file.
 
@@ -125,10 +125,10 @@ def bootstrap_and_write_vcfs(haplotype_array, snp_legend_file, outdir, n_bootstr
 
 if __name__ == "__main__":
     # Load haplotype matrix from VCF
-    haplotype_array = vcf_to_haplotype_array('/scratch2/prateek/genetic_pc_github/results/b38/8020/data/b38_test.vcf')
+    haplotype_array = vcf_to_haplotype_array('/scratch2/prateek/genetic_pc_github/results/b38/afr/data/afr_test.vcf')
 
     snp_legend_file = '/scratch2/prateek/genetic_pc_github/aux/b38_SNP.legend'
-    outdir = '/scratch2/prateek/genetic_pc_github/results/b38/8020/data/test_bootstraps'
+    outdir = '/scratch2/prateek/genetic_pc_github/results/b38/afr/data/test_bootstraps'
 
     # Generate and write 10 bootstrapped VCFs
     bootstrap_and_write_vcfs(haplotype_array, snp_legend_file, outdir, n_bootstraps=10)

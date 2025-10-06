@@ -69,8 +69,8 @@ def create_vcf_from_legend(haplotype_array, snp_legend_file, output_file='output
         for line in vcf_body:
             f.write(line + "\n")
 
-method = "hclt"
-split = "8020"
+method = "wgan"
+split = "afr"
 file = f"../../results/b38/{split}/{method}/b38_{method}_{split}_samples"
 hap_file = f"{file}.txt"
 vcf_file = f"{file}.vcf"

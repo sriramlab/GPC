@@ -21,20 +21,6 @@ from bed_reader import open_bed
 import gc
 from joblib import Parallel, delayed
 
-def compute_r_squared_old(array1, array2):
-    # Ensure both arrays are NumPy arrays
-    array1 = np.array(array1)
-    array2 = np.array(array2)
-
-    # Calculate the correlation coefficient
-    correlation_matrix = np.corrcoef(array1, array2)
-    correlation_xy = correlation_matrix[0, 1]
-    
-    # Calculate R^2
-    r_squared = correlation_xy ** 2
-    
-    return r_squared
-
 def vcf_to_haplotype_array(vcf_file):
     haplotypes = []
 
@@ -131,7 +117,7 @@ def run_r2_on_data_with_mask(valid_data_tensor, pc_model, mask_indices_file):
     return mask_indices, r2s
 
 # === Load and compile PC model ===
-pc_path = '/scratch2/prateek/genetic_pc_github/results/b38/8020/hclt/pc_14973_8020_4006-128_5000epochs_ps0.01.jpc'
+pc_path = '/scratch2/prateek/genetic_pc_github/results/b38/noneur/hclt/pc_14670_noneur_3202-128_5000epochs_ps0.005.jpc'
 pc_model = juice.compile(juice.load(pc_path))
 pc_model.to(device)
 
@@ -139,18 +125,25 @@ pc_model.to(device)
 mask_file = "/scratch2/prateek/genetic_pc_github/results/b38/missing_indices.txt"
 with open(mask_file, "r") as f:
     mask_indices = [int(line.strip()) for line in f if line.strip()]
-mask_indices = torch.tensor(mask_indices, dtype=torch.long)
+
+# === Load MAF file (2-column: SNP <tab> MAF) into lists ===
+maf_df = pd.read_csv(
+    "/scratch2/prateek/genetic_pc_github/aux/b38_legend.maf.txt",
+    sep=" ", header=None, names=["SNP", "MAF"]
+)
+snp_list = maf_df["SNP"].tolist()
+maf_list = maf_df["MAF"].tolist()
 
 # === Step 1: Compute base R2 ===
 print("Computing base R2...")
-base_data_path = '/scratch2/prateek/genetic_pc_github/results/b38/8020/data/b38_test.txt'
+base_data_path = '/scratch2/prateek/genetic_pc_github/results/b38/noneur/data/noneur_test.txt'
 valid_data = np.loadtxt(base_data_path, dtype=np.int8, delimiter=' ')
 valid_data_tensor = torch.tensor(valid_data, dtype=torch.long)
 
 _, r2_base = run_r2_on_data_with_mask(valid_data_tensor, pc_model, mask_file)
 
 # === Step 2: Compute bootstrap R2s ===
-bootstrap_dir = '/scratch2/prateek/genetic_pc_github/results/b38/8020/data/test_bootstraps'
+bootstrap_dir = '/scratch2/prateek/genetic_pc_github/results/b38/noneur/data/test_bootstraps'
 r2_boots = []
 
 for boot_id in range(1, 11):
@@ -163,18 +156,40 @@ for boot_id in range(1, 11):
 
 r2_boot_array = np.stack(r2_boots, axis=-1)  # shape (num_masked_features, 10)
 
-# === Step 3: Build final DataFrame ===
-output_df = pd.DataFrame({"Index": mask_indices.numpy(), "R2_base": r2_base})
-for boot_id in range(1, 11):
-    output_df[f"R2_boot_{boot_id}"] = r2_boot_array[:, boot_id - 1]
+# === Step 3: Build final DataFrame in target format using mask indices ===
+rows = []
+for idx, mask_idx in enumerate(mask_indices):
+    snp_id = snp_list[mask_idx]
+    snp_maf = maf_list[mask_idx]
 
-output_df.to_csv("r2_b38_multi_0.01.csv", index=False)
+    row = {
+        "SNP Set": snp_id,
+        "R2": r2_base[idx],
+        "MAF": snp_maf
+    }
+    for boot_id in range(1, 11):
+        row[f"R2_boot_{boot_id}"] = r2_boot_array[idx, boot_id - 1]
+    rows.append(row)
+
+output_df = pd.DataFrame(rows, columns=[
+    "SNP Set", "R2",
+    "R2_boot_1","R2_boot_2","R2_boot_3","R2_boot_4","R2_boot_5",
+    "R2_boot_6","R2_boot_7","R2_boot_8","R2_boot_9","R2_boot_10",
+    "MAF"
+])
+
+output_csv = "/scratch2/prateek/genetic_pc_github/plots/impute/results/multi/noneur_multi_pc_b38_chr15_results.csv"
+os.makedirs(os.path.dirname(output_csv), exist_ok=True)
+output_df.to_csv(output_csv, index=False)
+print(f"\nSaved per-SNP results to {output_csv}")
 
 # === Step 4: Print averages ===
-mean_base = np.mean(r2_base)
-mean_boot = np.mean(r2_boot_array)
-sem_boot = np.std(np.mean(r2_boot_array, axis=0), ddof=1)
+mean_base = np.nanmean(r2_base)
+boot_means = [np.nanmean(r2_boot_array[:, j]) for j in range(r2_boot_array.shape[1])]
+mean_boot = np.mean(boot_means)
+sem_boot = np.std(boot_means, ddof=1)
 ci_boot = 1.96 * sem_boot
 
-print(f"\nMean base R2 = {mean_base:.4f}")
+print("\n=== Results ===")
+print(f"Base mean R2 = {mean_base:.4f}")
 print(f"Bootstrap mean R2 = {mean_boot:.4f} ± {ci_boot:.4f} (95% CI)")

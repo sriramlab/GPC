@@ -174,8 +174,9 @@ def compute_r_squared_old(array1, array2):
     
     # Calculate R^2
     r_squared = correlation_xy ** 2
-    
-    return r_squared
+
+    # Replace NaN with 0
+    return np.nan_to_num(r_squared, nan=0.0)
 
 def analyze_vcf(vcf_file):
     min_pos = float('inf')
@@ -278,7 +279,7 @@ def run_imputation_and_eval(vcf_file, snp_indices_to_drop, rs_ids, chrnum, folde
 def main():
     temp_dir = tempfile.mkdtemp(prefix=f"temp{k}")
 
-    folder = "/scratch2/prateek/genetic_pc_github/results/b38/8020"
+    folder = "/scratch2/prateek/genetic_pc_github"
     plink_file_train_prefix = train_prefix
     plink_file_test_prefix = test_prefix
     chrnum = chrnumber
@@ -295,10 +296,6 @@ def main():
 
     os.environ['BCFTOOLS_PLUGINS'] = '/scratch2/prateek/bcftools/plugins'
 
-    # Load MAF info
-    maf_df = pd.read_csv(info_file, sep="\t", header=None, names=["SNP", "MAF"])
-    maf_map = dict(zip(maf_df["SNP"], maf_df["MAF"]))
-
     # === Base run ===
     print("Running on base test file...")
     base_r2s = run_imputation_and_eval(
@@ -306,13 +303,12 @@ def main():
         plink_file_train_prefix, plink_file_test_prefix, temp_dir
     )
 
-    exit()
     # === Bootstraps ===
-    bootstrap_dir = os.path.join(folder, "data/test_bootstraps")
+    bootstrap_dir = os.path.join(folder, "results/b38/afr/data/test_bootstraps")
     bootstrap_r2s_list = []  # list of dicts
     for i in range(1, 11):
         boot_vcf = os.path.join(bootstrap_dir, f"bootstrap_{i}.vcf")
-        plink_file_test_prefix = f"data/test_bootstraps/bootstrap_{i}"
+        plink_file_test_prefix = f"results/b38/afr/data/test_bootstraps/bootstrap_{i}"
         print(f"Running on {boot_vcf}...")
         r2s = run_imputation_and_eval(
             boot_vcf, snp_indices_to_drop, rs_ids, chrnum, folder,
@@ -320,16 +316,26 @@ def main():
         )
         bootstrap_r2s_list.append(r2s)
 
+    # Load MAFs into a simple list
+    maf_list = pd.read_csv(info_file, sep=" ", header=None, usecols=[1]).squeeze("columns").tolist()
+
+    # Load masked SNP indices (the "missing indices")
+    with open(snp_index_file, "r") as f:
+        masked_indices = [int(line.strip()) for line in f if line.strip()]
+
     # === Combine per-SNP results ===
     rows = []
-    for snp, base_r2 in base_r2s.items():
+    snp_list = list(base_r2s.keys())  # preserve order
+    for idx, snp in enumerate(snp_list):
         row = {
             "SNP Set": snp,
-            "R2": base_r2,
-            "MAF": maf_map.get(snp, np.nan)
+            "R2": base_r2s[snp],
         }
         for j, boot_dict in enumerate(bootstrap_r2s_list, 1):
             row[f"R2_boot_{j}"] = boot_dict.get(snp, np.nan)
+        # Assign MAF using masked_indices
+        maf_idx = masked_indices[idx] if idx < len(masked_indices) else None
+        row["MAF"] = maf_list[maf_idx] if maf_idx is not None else np.nan
         rows.append(row)
 
     df = pd.DataFrame(rows, columns=[
@@ -339,7 +345,7 @@ def main():
         "MAF"
     ])
 
-    out_csv = f"multi_results/{out}_chr{chrnum}_results.csv"
+    out_csv = f"/scratch2/prateek/genetic_pc_github/plots/impute/results/multi/{out}_chr{chrnum}_results.csv"
     df.to_csv(out_csv, index=False)
     print(f"\nSaved per-SNP results to {out_csv}")
 

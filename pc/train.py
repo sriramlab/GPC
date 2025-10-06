@@ -40,9 +40,9 @@ def vcf_to_haplotype_array(vcf_file):
     return haplotype_array.T
 
 snps = "14670"
-amt = 3202
+amt = 1056
 data = "b38"
-split = "noneur"
+split = "afr"
 
 latents = 128
 ps = 0.005

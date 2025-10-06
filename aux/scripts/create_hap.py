@@ -4,7 +4,6 @@ split = '8020'
 method = 'hclt'
 
 filename = f"../../results/1KG/{split}/{method}/10K_{method}_{split}_samples"
-filename = "/scratch2/prateek/genetic_pc_github/results/b38/8020/data/8020_test"
 arr = np.loadtxt(f'{filename}.txt', dtype=int)
 print(arr.shape)
 

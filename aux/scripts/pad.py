@@ -1,4 +1,4 @@
-split = '8020'
+split = 'afr'
 
 filename = f'../../results/b38/{split}/data/{split}_train'
 input_file = f"{filename}.hapt"
