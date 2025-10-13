@@ -41,9 +41,9 @@
 39,wasserstein,0.24172002830947692,,RBM,4,coupled_PCA
 40,wasserstein,0.2959518751344242,,RBM,5,coupled_PCA
 41,wasserstein,0.1949792335147414,,RBM,6,coupled_PCA
-42,wasserstein,0.8563227032672232,,HCLT,1,coupled_PCA
-43,wasserstein,0.6154905685978042,,HCLT,2,coupled_PCA
-44,wasserstein,0.2581702790439263,,HCLT,3,coupled_PCA
-45,wasserstein,0.32268399270043513,,HCLT,4,coupled_PCA
-46,wasserstein,0.21205760682612396,,HCLT,5,coupled_PCA
-47,wasserstein,0.6736368763257303,,HCLT,6,coupled_PCA
+42,wasserstein,0.8563227032672232,,PC,1,coupled_PCA
+43,wasserstein,0.6154905685978042,,PC,2,coupled_PCA
+44,wasserstein,0.2581702790439263,,PC,3,coupled_PCA
+45,wasserstein,0.32268399270043513,,PC,4,coupled_PCA
+46,wasserstein,0.21205760682612396,,PC,5,coupled_PCA
+47,wasserstein,0.6736368763257303,,PC,6,coupled_PCA

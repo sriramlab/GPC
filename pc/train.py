@@ -40,20 +40,20 @@ def vcf_to_haplotype_array(vcf_file):
     return haplotype_array.T
 
 snps = "14670"
-amt = 1056
+amt = 3202
 data = "b38"
-split = "afr"
+split = "noneur"
 
 latents = 128
 ps = 0.005
 num_epochs = 5000
-batch_size = 256
+batch_size = 64
 
 
 print("Number of CUDA devices:", torch.cuda.device_count())
 print(torch.version.cuda)
 
-device = torch.device("cuda:1")
+device = torch.device("cuda")
 np.random.seed(1)
 
 print(device)
@@ -71,14 +71,12 @@ print(valid_data.shape)
 train_loader = DataLoader(
     dataset = TensorDataset(train_data),
     batch_size = batch_size,
-    shuffle = True,
-    drop_last = True
+    shuffle = True
 )
 valid_loader = DataLoader(
     dataset = TensorDataset(valid_data),
     batch_size = batch_size,
-    shuffle = False,
-    drop_last = True
+    shuffle = False
 )
 
 ns = juice.structures.HCLT(
@@ -96,7 +94,7 @@ with torch.cuda.device(pc.device):
         lls = pc(x, record_cudagraph = True)
         lls.mean().backward()
 
-    log_filename = f"../results/{data}/{split}/hclt/{snps}_{split}_{amt}_{latents}_{num_epochs}epochs_ps{ps}.log"
+    log_filename = f"../results/{data}/{split}/hclt/{snps}_{split}_{amt}_{latents}_{num_epochs}epochs_ps{ps}_2.log"
     with open(log_filename, "w") as log_file:
         for epoch in range(1, num_epochs+1):
             t0 = time.time()
@@ -135,4 +133,4 @@ with torch.cuda.device(pc.device):
             log_file.flush()  # Ensure logs are written in real-time
 
             if epoch % 5000 == 0:
-                juice.save(f'../results/{data}/{split}/hclt/pc_{snps}_{split}_{amt}-{latents}_{epoch}epochs_ps{ps}.jpc', pc)
+                juice.save(f'../results/{data}/{split}/hclt/pc_{snps}_{split}_{amt}-{latents}_{epoch}epochs_ps{ps}_2.jpc', pc)

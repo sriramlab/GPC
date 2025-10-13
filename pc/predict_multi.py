@@ -117,7 +117,7 @@ def run_r2_on_data_with_mask(valid_data_tensor, pc_model, mask_indices_file):
     return mask_indices, r2s
 
 # === Load and compile PC model ===
-pc_path = '/scratch2/prateek/genetic_pc_github/results/b38/noneur/hclt/pc_14670_noneur_3202-128_5000epochs_ps0.005.jpc'
+pc_path = '/scratch2/prateek/genetic_pc_github/results/b38/8020/hclt/pc_14670_8020_4006-128_5000epochs_ps0.005_2.jpc'
 pc_model = juice.compile(juice.load(pc_path))
 pc_model.to(device)
 
@@ -136,14 +136,14 @@ maf_list = maf_df["MAF"].tolist()
 
 # === Step 1: Compute base R2 ===
 print("Computing base R2...")
-base_data_path = '/scratch2/prateek/genetic_pc_github/results/b38/noneur/data/noneur_test.txt'
+base_data_path = '/scratch2/prateek/genetic_pc_github/results/b38/8020/data/8020_test.txt'
 valid_data = np.loadtxt(base_data_path, dtype=np.int8, delimiter=' ')
 valid_data_tensor = torch.tensor(valid_data, dtype=torch.long)
 
 _, r2_base = run_r2_on_data_with_mask(valid_data_tensor, pc_model, mask_file)
 
 # === Step 2: Compute bootstrap R2s ===
-bootstrap_dir = '/scratch2/prateek/genetic_pc_github/results/b38/noneur/data/test_bootstraps'
+bootstrap_dir = '/scratch2/prateek/genetic_pc_github/results/b38/8020/data/test_bootstraps'
 r2_boots = []
 
 for boot_id in range(1, 11):
@@ -178,7 +178,7 @@ output_df = pd.DataFrame(rows, columns=[
     "MAF"
 ])
 
-output_csv = "/scratch2/prateek/genetic_pc_github/plots/impute/results/multi/noneur_multi_pc_b38_chr15_results.csv"
+output_csv = "/scratch2/prateek/genetic_pc_github/plots/impute/results/multi/8020_multi_pc_b38_chr15_results_2.csv"
 os.makedirs(os.path.dirname(output_csv), exist_ok=True)
 output_df.to_csv(output_csv, index=False)
 print(f"\nSaved per-SNP results to {output_csv}")
