@@ -2,7 +2,7 @@
 
 Official repository for artificial genome generation and imputation using METHOD.
 
-This repository is still being modified. In general, the Impute5 pipeline here should not be used. It is made specifically for the single SNP imputation experiments and does not work well on clusters since a new VCF file needs to be created each time a SNP is dropped.
+This repository is actively being updated.
 
 All code in the `plots/structure/` directory is adopted and modified from this paper: [Deep convolutional and conditional neural networks for large-scale genomic data generation](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1011584#sec002).
 
@@ -10,10 +10,10 @@ All code in the `plots/structure/` directory is adopted and modified from this p
 
 ## Installation
 
-### Install PyJuice from source
+### Install PyJuice genetic pc branch from source
 
 ```bash
-git clone https://github.com/Tractables/pyjuice.git
+git clone --branch genetic-pc --single-branch https://github.com/Tractables/pyjuice.git
 cd pyjuice
 pip install -e .
 ```
