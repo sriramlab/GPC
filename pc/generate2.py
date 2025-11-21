@@ -22,8 +22,8 @@ import gc
 from tqdm import tqdm
 
 data = "b38"
-split = "noneur"
-snps = f"14670_{split}_3202"
+split = "afr"
+snps = f"14670_{split}_1056"
 latents = 128
 ps = 0.005
 num_epochs = 5000

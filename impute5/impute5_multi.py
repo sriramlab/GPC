@@ -224,6 +224,8 @@ def main():
     base_dir = os.path.dirname(args.test)
     for i in range(1, 11):
         boot_vcf = os.path.join(base_dir, f"test_bootstraps/bootstrap_{i}.vcf")
+        if not os.path.exists(boot_vcf):
+            continue  # Skip if bootstrap file does not exist
         boot_prefix = os.path.splitext(boot_vcf)[0]
         print(f"Running bootstrap {i}...")
         boot_r2s = run_imputation_and_eval(boot_vcf, snp_indices, rs_ids, args.chr,
@@ -247,9 +249,12 @@ def main():
 
     # Summary stats
     base_mean = np.nanmean(list(base_r2s.values()))
-    boot_means = [np.nanmean(list(b.values())) for b in bootstrap_r2s]
-    ci = 1.96 * np.std(boot_means, ddof=1)
-    print(f"\nBase mean R²={base_mean:.4f}, Bootstrap mean={np.mean(boot_means):.4f} ± {ci:.4f}")
+    if bootstrap_r2s:  # Only compute bootstrap stats if bootstraps were found
+        boot_means = [np.nanmean(list(b.values())) for b in bootstrap_r2s]
+        ci = 1.96 * np.std(boot_means, ddof=1)
+        print(f"\nBase mean R²={base_mean:.4f}, Bootstrap mean={np.mean(boot_means):.4f} ± {ci:.4f}")
+    else:
+        print(f"\nBase mean R²={base_mean:.4f} (no bootstraps found)")
 
     shutil.rmtree(temp_dir)
 

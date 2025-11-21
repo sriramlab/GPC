@@ -53,7 +53,7 @@ def vcf_to_haplotype_array(vcf_file):
 print("Number of CUDA devices:", torch.cuda.device_count())
 print(torch.version.cuda)
 
-device = torch.device("cuda:1")
+device = torch.device("cuda:0")
 np.random.seed(1)
 
 print(device)
@@ -94,7 +94,7 @@ def run_r2_on_data_with_mask(valid_data_tensor, pc_model, mask_indices_file):
         missing_mask[mask_indices] = True
 
         # Query conditional distribution for all missing features simultaneously
-        with torch.cuda.device("cuda:1"):
+        with torch.cuda.device("cuda:0"):
             lls = juice.queries.conditional(pc_model, data=data, missing_mask=missing_mask)
         # shape: [batch_size, num_missing, 2]
         probs = lls[:, :, :]
@@ -117,7 +117,7 @@ def run_r2_on_data_with_mask(valid_data_tensor, pc_model, mask_indices_file):
     return mask_indices, r2s
 
 # === Load and compile PC model ===
-pc_path = '/scratch2/prateek/genetic_pc_github/results/b38/8020/hclt/pc_14670_8020_4006-128_5000epochs_ps0.005_2.jpc'
+pc_path = '/scratch2/prateek/genetic_pc_github/results/b38/afr/hclt/pc_14670_eur_and_afr_train_2060-128_5000epochs_ps0.005.jpc'
 pc_model = juice.compile(juice.load(pc_path))
 pc_model.to(device)
 
@@ -136,14 +136,14 @@ maf_list = maf_df["MAF"].tolist()
 
 # === Step 1: Compute base R2 ===
 print("Computing base R2...")
-base_data_path = '/scratch2/prateek/genetic_pc_github/results/b38/8020/data/8020_test.txt'
+base_data_path = '/scratch2/prateek/genetic_pc_github/results/b38/afr/data/afr_test.txt'
 valid_data = np.loadtxt(base_data_path, dtype=np.int8, delimiter=' ')
 valid_data_tensor = torch.tensor(valid_data, dtype=torch.long)
 
 _, r2_base = run_r2_on_data_with_mask(valid_data_tensor, pc_model, mask_file)
 
 # === Step 2: Compute bootstrap R2s ===
-bootstrap_dir = '/scratch2/prateek/genetic_pc_github/results/b38/8020/data/test_bootstraps'
+bootstrap_dir = '/scratch2/prateek/genetic_pc_github/results/b38/afr/data/test_bootstraps'
 r2_boots = []
 
 for boot_id in range(1, 11):
@@ -178,7 +178,7 @@ output_df = pd.DataFrame(rows, columns=[
     "MAF"
 ])
 
-output_csv = "/scratch2/prateek/genetic_pc_github/plots/impute/results/multi/8020_multi_pc_b38_hum5_chr15_results.csv"
+output_csv = "/scratch2/prateek/genetic_pc_github/plots/impute/results/multi/afr_multi_pc_combined_b38_hum5_chr15_results.csv"
 os.makedirs(os.path.dirname(output_csv), exist_ok=True)
 output_df.to_csv(output_csv, index=False)
 print(f"\nSaved per-SNP results to {output_csv}")

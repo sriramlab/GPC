@@ -40,7 +40,7 @@ def vcf_to_haplotype_array(vcf_file):
     return haplotype_array.T
 
 snps = "14670"
-amt = 3202
+amt = 4206
 data = "b38"
 split = "noneur"
 
@@ -58,8 +58,8 @@ np.random.seed(1)
 
 print(device)
 
-train_data = np.loadtxt(f"../results/{data}/{split}/data/{split}_train.txt", dtype=np.int8, delimiter=' ')
-valid_data = np.loadtxt(f"../results/{data}/{split}/data/{split}_test.txt", dtype=np.int8, delimiter=' ')
+train_data = np.loadtxt(f"/scratch2/prateek/genetic_pc_github/aux/b38_real_eur_and_noneur_train.txt", dtype=np.int8, delimiter=' ')
+valid_data = np.loadtxt(f"/scratch2/prateek/genetic_pc_github/results/b38/noneur/data/noneur_test.txt", dtype=np.int8, delimiter=' ')
 
 train_data = torch.tensor(train_data, dtype=torch.long)
 valid_data = torch.tensor(valid_data, dtype=torch.long)
@@ -71,12 +71,14 @@ print(valid_data.shape)
 train_loader = DataLoader(
     dataset = TensorDataset(train_data),
     batch_size = batch_size,
-    shuffle = True
+    shuffle = True,
+    drop_last = True
 )
 valid_loader = DataLoader(
     dataset = TensorDataset(valid_data),
     batch_size = batch_size,
-    shuffle = False
+    shuffle = False,
+    drop_last = True
 )
 
 ns = juice.structures.HCLT(
@@ -94,7 +96,7 @@ with torch.cuda.device(pc.device):
         lls = pc(x, record_cudagraph = True)
         lls.mean().backward()
 
-    log_filename = f"../results/{data}/{split}/hclt/{snps}_{split}_{amt}_{latents}_{num_epochs}epochs_ps{ps}_2.log"
+    log_filename = f"/scratch2/prateek/genetic_pc_github/results/b38/noneur/hclt/14670_eur_and_noneur_train_{amt}_128_5000epochs_ps0.005_oldcommit.log"
     with open(log_filename, "w") as log_file:
         for epoch in range(1, num_epochs+1):
             t0 = time.time()
@@ -133,4 +135,4 @@ with torch.cuda.device(pc.device):
             log_file.flush()  # Ensure logs are written in real-time
 
             if epoch % 5000 == 0:
-                juice.save(f'../results/{data}/{split}/hclt/pc_{snps}_{split}_{amt}-{latents}_{epoch}epochs_ps{ps}_2.jpc', pc)
+                juice.save(f'/scratch2/prateek/genetic_pc_github/results/b38/noneur/hclt/pc_14670_eur_and_noneur_train_{amt}-128_5000epochs_ps0.005_oldcommit.jpc', pc)

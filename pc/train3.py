@@ -40,14 +40,14 @@ def vcf_to_haplotype_array(vcf_file):
     return haplotype_array.T
 
 snps = "14670"
-amt = 3202
+amt = 1800
 data = "b38"
 split = "noneur"
 
 latents = 128
 ps = 0.005
 num_epochs = 5000
-batch_size = 256
+batch_size = 128
 
 
 print("Number of CUDA devices:", torch.cuda.device_count())
@@ -58,8 +58,8 @@ np.random.seed(1)
 
 print(device)
 
-train_data = np.loadtxt(f"../results/{data}/{split}/data/{split}_train.txt", dtype=np.int8, delimiter=' ')
-valid_data = np.loadtxt(f"../results/{data}/{split}/data/{split}_test.txt", dtype=np.int8, delimiter=' ')
+train_data = np.loadtxt(f"/scratch2/prateek/genetic_pc_github/aux/b38_real_eur_and_afr_train.txt", dtype=np.int8, delimiter=' ')
+valid_data = np.loadtxt(f"/scratch2/prateek/genetic_pc_github/results/b38/afr/data/afr_test.txt", dtype=np.int8, delimiter=' ')
 
 train_data = torch.tensor(train_data, dtype=torch.long)
 valid_data = torch.tensor(valid_data, dtype=torch.long)
@@ -91,10 +91,10 @@ pc.to(device)
 with torch.cuda.device(pc.device):
     for batch in train_loader:
         x = batch[0].to(device)
-        lls = pc(x, record_cudagraph = True)
+        lls = pc(x, record_cudagraph = False)
         lls.mean().backward()
 
-    log_filename = f"../results/{data}/{split}/hclt/{snps}_{split}_{amt}_{latents}_{num_epochs}epochs_ps{ps}_2.log"
+    log_filename = f"/scratch2/prateek/genetic_pc_github/results/b38/afr/hclt/14670_eur_and_afr_train_{amt}_128_5000epochs_ps0.005_oldcommit.log"
     with open(log_filename, "w") as log_file:
         for epoch in range(1, num_epochs+1):
             t0 = time.time()
@@ -133,4 +133,4 @@ with torch.cuda.device(pc.device):
             log_file.flush()  # Ensure logs are written in real-time
 
             if epoch % 5000 == 0:
-                juice.save(f'../results/{data}/{split}/hclt/pc_{snps}_{split}_{amt}-{latents}_{epoch}epochs_ps{ps}_2.jpc', pc)
+                juice.save(f'/scratch2/prateek/genetic_pc_github/results/b38/afr/hclt/pc_14670_eur_and_afr_train_{amt}-128_5000epochs_ps0.005_oldcommit.jpc', pc)
