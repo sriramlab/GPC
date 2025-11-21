@@ -24,9 +24,9 @@ git clone https://github.com/prateekanand2/genetic_pc.git
 
 ### Train a small model on the 805 SNP data and generate samples
 ```bash
-cd genetic_pc/pc
-python3 train.py
-python3 generate.py
+cd genetic_pc/pc/demo
+python3 train_demo.py
+python3 generate_demo.py
 ```
 
 ### Visualize PCA
