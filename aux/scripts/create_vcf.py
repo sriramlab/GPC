@@ -71,7 +71,8 @@ def create_vcf_from_legend(haplotype_array, snp_legend_file, output_file='output
 
 method = "hclt"
 split = "noneur"
-file = f"../../results/b38/{split}/{method}/b38_{method}_{split}_samples_combined"
+# file = f"../../results/b38/{split}/{method}/b38_{method}_{split}_samples_combined"
+file = f"/scratch2/prateek/genetic_pc_github/aux/b38_real_eur_and_noneur_train"
 hap_file = f"{file}.txt"
 vcf_file = f"{file}.vcf"
 

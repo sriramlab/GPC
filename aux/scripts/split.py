@@ -4,9 +4,9 @@ from sklearn.model_selection import train_test_split
 # -----------------------------
 # File paths
 # -----------------------------
-hap_file = "../b38_real_afr.hapt"       # Your haplotype file
-train_file = "../../results/b38/afr/data/afr_train.txt"
-test_file = "../../results/b38/afr/data/afr_test.txt"
+hap_file = "../b38_real_afr_smaller.hapt"       # Your haplotype file
+train_file = "../../results/b38/afr/data/afr_train_smaller.txt"
+test_file = "../../results/b38/afr/data/afr_test_smaller.txt"
 test_size = 0.2                    # fraction for test set
 random_state = 42                  # reproducibility
 
