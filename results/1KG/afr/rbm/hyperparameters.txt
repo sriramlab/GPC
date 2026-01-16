@@ -4,3 +4,4 @@ l2 = 0.0
 NGibbs = 40
 nMB = 1000
 nNeg = 1000
+epochs = 10000
