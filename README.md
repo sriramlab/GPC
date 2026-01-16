@@ -1,6 +1,6 @@
-# METHOD: Deep generative model of genetic variation data improves imputation accuracy in private populations
+# GPC: Deep generative model of genetic variation data improves imputation accuracy in private populations
 
-Official repository for artificial genome generation and imputation using METHOD.
+Official repository for artificial genome generation and imputation using GPC.
 
 This repository is actively being updated.
 
