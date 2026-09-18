@@ -1,28 +1,5 @@
-"""What actually stops GPC from fitting a larger region, as computable laws.
-
-Four independent costs grow with the number of SNPs M, and whichever hits its
-ceiling first is the one that produces an error. This measures each of them on
-real data so the ceiling can be stated as a number rather than a guess.
-
-  1. Mutual-information matrix. `HCLT` allocates a dense M x M float32 on the
-     host: 4*M^2 bytes.
-  2. Chow-Liu graph. `chow_liu_tree` adds an explicit networkx edge for every
-     pair before taking a spanning tree: M(M-1)/2 edge objects, each costing a
-     few hundred bytes of Python dict. This is the dominant memory term and the
-     reason build time grows as roughly M^2.5.
-  3. Tree depth. The circuit is built and traversed by recursion, once per node,
-     so a deep backbone exhausts the 8 MB C stack exactly as the chain-structured
-     HMM does past ~6,000 SNPs. Genomic LD is local, so the maximum spanning tree
-     tends to follow the chromosome and can be far deeper than a balanced tree.
-  4. GPU memory for the compiled circuit, which is the only term the latent count
-     affects.
-
-Terms 1-3 are computed here without ever building the circuit, by taking the
-spanning tree with scipy instead of networkx, so a ladder of M can be scanned in
-minutes rather than days.
-
-    python gpc_limits.py --snps 2047 4095 8191 12287 14670 20000
-"""
+"""Measures what limits GPC's region size: host memory and time during
+Chow-Liu tree construction."""
 
 import argparse
 import csv

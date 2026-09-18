@@ -1,22 +1,4 @@
-"""Run the direct-imputation arm on one GPU, config by config, then build its CSV.
-
-The direct arm is the "HMM (direct)" line in the imputation figures: conditional
-P(SNP | all other observed SNPs) straight from the chain model, no artificial
-genomes and no Impute5. It needs nothing from the cluster, so it can run here on
-whatever GPU the training queue is not using.
-
-Cost is one circuit traversal per (chunk, batch, SNP), and -- as with training --
-the traversal dominates, so a batch big enough to hold the whole test set in one
-go is much cheaper than several smaller ones. Every remaining config has
-n_test <= 2048, so at --batch-size 2048 each is 4 chunks x 1 batch x ~2500 SNPs.
-
-Resumable at chunk granularity (predict_hmm.py skips a chunk whose .chunk{i}.npy
-exists) and safe to re-run: configs already carrying a dosage matrix are skipped.
-
-Usage:
-    ./direct_queue.py --gpu 3                 # dry run
-    ./direct_queue.py --gpu 3 --run
-"""
+"""Queues direct (conditional) imputation jobs."""
 
 import os
 import sys

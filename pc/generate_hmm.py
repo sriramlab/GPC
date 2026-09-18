@@ -1,14 +1,4 @@
-"""Sample artificial genomes from the chunked HMM.
-
-Each chunk is an independent HMM over a contiguous block of SNPs, so a full
-artificial genome is formed by drawing one sample per chunk and concatenating
-them in genomic order. Chunk boundaries are therefore independent (3 boundaries
-out of ~10k SNPs); this is a property of the chunked HMM, not of the sampler.
-
-Writes the same two files the other methods produce:
-    {sample_prefix}.txt    haplotypes, one per row, space separated
-    {sample_prefix}.hapt   the same with the two leading metadata columns
-"""
+"""Samples artificial genomes from the trained HMM chunks."""
 
 import os
 import sys

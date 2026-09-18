@@ -1,32 +1,4 @@
-"""Run the remaining HMM chunk trainings as a work queue, one job per GPU slot.
-
-Why a queue rather than the fixed streams in launch_hmm_training.sh:
-
-  * The 4 chunks of a config are independent models over disjoint SNP blocks,
-    so chunk -- not config -- is the natural unit of parallelism. The old
-    layout trained a config's 4 chunks sequentially inside one process while
-    stacking 4 configs onto one GPU, which is exactly backwards.
-  * Epoch cost is ~n_batches * (one circuit traversal), and a traversal is
-    largely serial. Stacking jobs on a GPU divides throughput rather than
-    filling idle capacity: measured aggregate on a 4-way-shared GPU was no
-    better than a single job had on its own, and per-job latency was ~3x worse.
-
-Job order is critical-path first, not longest-first. Only the population-only
-configs (1KG/UKBB afr and noneur) gate anything downstream: their checkpoints
-are what the AG route needs before sampling, panel building and the Impute5
-leave-one-SNP-out sweeps can begin, and those sweeps are ~12 days of CPU. The
-eur_and_* configs are direct-imputation only and gate nothing, so they run last
-even though they are individually the largest jobs. Within a config, longest
-chunk first so the tail does not end up holding a GPU alone.
-
-Everything is resumable: hmm.py rewinds to its last checkpoint, and re-running
-this script recomputes what is left.
-
-Usage:
-    ./hmm_queue.py --gpus 3 1              # dry run, shows the plan
-    ./hmm_queue.py --gpus 3 1 --run
-    ./hmm_queue.py --gpus 3 1 --run --batch-size 1024
-"""
+"""Queues HMM training jobs across chunks and datasets."""
 
 import os
 import sys

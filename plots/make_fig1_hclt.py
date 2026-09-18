@@ -108,9 +108,10 @@ def main():
                 fontsize=12, fontweight="bold", color=RED if i in red_idx else DARK)
     # adjacent (weak, local) correlations
     for i in range(5):
-        arc(ax, (xs_a[i], y_a + R), (xs_a[i + 1], y_a + R), 0.55, DARK, lw=1.2)
+        arc(ax, (xs_a[i], y_a + R), (xs_a[i + 1], y_a + R), 0.55, DARK, lw=1.2,
+            arrow=False)
     # the long-range pair the whole figure is about
-    arc(ax, (xs_a[1], y_a + R), (xs_a[5], y_a + R), 0.42, RED, lw=1.8)
+    arc(ax, (xs_a[1], y_a + R), (xs_a[5], y_a + R), 0.42, RED, lw=1.8, arrow=False)
     ax.text((xs_a[1] + xs_a[5]) / 2, y_a + 2.05, "strong long-range correlation",
             ha="center", va="center", fontsize=10.5, style="italic", color=RED)
 
@@ -148,7 +149,7 @@ def main():
             fontsize=10.5, style="italic", color=RED)
 
     # ------------------------------------------------------------- (d) the HCLT
-    panel_title(ax, 10.4, 6.1, "d", "HCLT: emissions attached")
+    panel_title(ax, 10.4, 6.1, "d", "HCLT: tree over latent variables")
     hclt = {1: (14.5, 4.7), 3: (12.8, 3.4), 4: (12.8, 2.1), 5: (12.8, 0.8),
             2: (16.2, 3.4), 6: (16.2, 2.1)}
     emit = {1: (13.0, 4.7), 3: (11.3, 3.4), 4: (11.3, 2.1), 5: (11.3, 0.8),

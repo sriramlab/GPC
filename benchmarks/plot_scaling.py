@@ -1,16 +1,5 @@
-"""Scaling figure: per-epoch cost and peak memory against N and M.
-
-Runtime and memory are different measures, so they get their own panels rather
-than a second y-axis. The two independent variables likewise get their own
-columns: the left column sweeps haplotypes at fixed SNP count, the right sweeps
-SNPs at fixed haplotype count.
-
-Series colours and markers match the imputation figures, so a reader tracks the
-same model across the paper by the same colour.
-
-    python plot_scaling.py
-    -> results/plots/scaling.pdf
-"""
+"""Draws the scaling figure: training time, per-epoch cost and peak memory
+against haplotype and SNP counts."""
 
 import argparse
 import csv
@@ -98,7 +87,7 @@ def panel(ax, d, field, sweep, fix, ylabel, title, logy=True, logx=True):
         ax.set_xscale("log")
     if logy:
         ax.set_yscale("log")
-    ax.set_xlabel("Haplotypes $N$" if sweep == "N" else "SNPs $M$", fontsize=11)
+    ax.set_xlabel("Number of haplotypes" if sweep == "N" else "Number of SNPs", fontsize=11)
     ax.set_ylabel(ylabel, fontsize=11)
     ax.set_title(title, fontsize=11)
     ax.grid(True, which="both", linestyle="--", linewidth=0.5, alpha=0.5, zorder=0)

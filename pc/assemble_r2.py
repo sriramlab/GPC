@@ -1,16 +1,4 @@
-"""Turn a direct-imputation dosage matrix into the R2 CSV used by plot.ipynb.
-
-Input is the (n_test x n_snps) matrix of P(allele=1) written by predict_hmm.py.
-Output has exactly the columns the notebook reads:
-
-    SNP Set,R2,R2_boot_1,...,R2_boot_10,MAF
-
-Bootstrap columns are computed by indexing the base dosages with the recovered
-resampling indices (aux/scripts/recover_bootstrap_indices.py). A bootstrap
-replicate only resamples test individuals, and the conditional prediction for an
-individual depends solely on that individual's observed genotypes, so indexing
-is identical to re-running the model on the bootstrap VCF -- just 11x cheaper.
-"""
+"""Assembles per-chunk imputation results into one r2 table."""
 
 import argparse
 import os

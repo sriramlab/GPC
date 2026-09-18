@@ -57,8 +57,8 @@ overleaf/*.log
 
 # Benchmark scratch: only the final grid is tracked
 benchmarks/results/*
-!benchmarks/results/final_v3/
-!benchmarks/results/final_v3/**
+!benchmarks/results/final/
+!benchmarks/results/final/**
 
 # Per-chunk imputation intermediates: reassembled into the tracked results
 *_dosages.npy
@@ -75,3 +75,6 @@ overleaf/
 # Private review material: reviewer comments and unsubmitted manuscript PDFs
 GPC comments.docx
 gpc_iclr_2026.pdf
+
+# Local-only: superseded diagnostics and PyJuice debugging aids
+archive/

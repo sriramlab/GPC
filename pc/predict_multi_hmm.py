@@ -1,20 +1,4 @@
-"""Direct (model-based) array-based imputation with the chunked HMM.
-
-The chain-structured counterpart of predict_multi.py, which does this for GPC on
-the high-coverage 1KG (build 38) data. The protocol is identical: every SNP in
-results/b38/missing_indices_hum5.txt is masked simultaneously -- the
-HumanOmni5Exome array pattern, 12,551 of 14,670 sites -- and imputed in one
-conditional query, rather than one SNP at a time as in the leave-one-out
-experiments. Scoring, bootstrap handling and output format all follow
-predict_multi.py so the result drops straight into results/multi/.
-
-The only difference is the chunking. The HMM is trained as 6 blocks of 2,445
-SNPs, so the query is issued once per block with that block's masked positions,
-and each masked SNP is conditioned on the observed SNPs of its own block.
-
-    python predict_multi_hmm.py b38:8020
-    -> plots/impute/results/multi/8020_multi_pc_hmm_b38_hum5_chr15_results.csv
-"""
+"""Array-based imputation from a chunked HMM."""
 
 import argparse
 import os

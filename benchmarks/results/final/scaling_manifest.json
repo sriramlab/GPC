@@ -129,5 +129,6 @@
       "gpus_used_here": 1,
       "note": "run on a single GPU here for comparability; the published runs used two via DataParallel"
     }
-  }
+  },
+  "memory_note": "Peak GPU memory for GPC and RBM is taken from a re-measurement in which each method runs in its own process and the previous model is freed before the next is built; measuring points back-to-back leaves the earlier model resident and inflates the peak. Timings are from the 48-point grid and are unaffected. The four GPC points at M=12,287 and two at M=8,191 used the scipy spanning-tree route, which yields an identical circuit (num_parameters matches bit-for-bit) with far less host memory."
 }

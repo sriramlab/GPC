@@ -1,38 +1,5 @@
-"""Runtime and memory scaling benchmark for every generative model.
-
-Reviewer 1 (comment 5) and Reviewer 2 (comment 4) both ask for runtime and
-memory figures for all methods, and for how they scale with the number of
-training haplotypes (N) and the number of SNPs (M). This runs every method on
-the same data, the same grid and the same single GPU, and records the exact
-configuration used for each so the numbers can be reported accurately.
-
-WHAT IS MEASURED
-    seconds per training epoch (median over MEASURE_EPOCHS after a warmup) and
-    peak GPU memory. Per-epoch cost is the primitive quantity: epoch counts are
-    not comparable across methods (see EPOCHS below), so a single "training
-    time" number would compare different amounts of work. Total training time is
-    reported as per-epoch x that method's own epoch count, with the count stated.
-
-WHY THIS GRID
-    M is dictated by the WGAN. Its generator has a fixed six-block upsampling
-    stack (`for i in range(2,14,2)` in models_10K.py), so the input length must
-    satisfy M = latent_size * 2**12 - 1 for integer latent_size >= 1. That gives
-    4095, 8191, 12287, ... and is the reason the published WGAN runs zero-pad
-    10,000 SNPs up to 16,383. Taking M from the 14,670-SNP high-coverage region
-    lets the first three of those be real SNPs with no padding, so every method
-    sees identical data.
-
-CONFIGURATIONS
-    Each method keeps the hyperparameters it was actually trained with; they are
-    not made "equal" across methods because they are not comparable quantities
-    (an RBM Gibbs step and a circuit traversal are different units of work).
-    Every value is written to the manifest instead. Where our runs differ from
-    Yelmen et al. 2023, both values are recorded.
-
-    python scaling_benchmark.py --methods gpc hmm rbm wgan
-    -> benchmarks/results/scaling_results.csv
-       benchmarks/results/scaling_manifest.json
-"""
+"""Training time and peak GPU memory for GPC, RBM and WGAN across a grid of
+haplotype and SNP counts. See README for usage."""
 
 import argparse
 import gc

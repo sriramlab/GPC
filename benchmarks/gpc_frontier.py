@@ -1,31 +1,4 @@
-"""How large a region can GPC actually fit, and what does turning down L buy?
-
-Fitting a GPC has two phases with completely different cost laws, and they need
-to be measured separately because only one of them responds to the latent count:
-
-  1. Structure learning. `HCLT` computes a full M x M mutual-information matrix
-     and then hands it to `chow_liu_tree`, which builds a networkx graph with an
-     explicit edge for every pair of variables (`for v in range(K): for u in
-     range(v): G.add_edge(...)`) before taking a maximum spanning tree. That is
-     O(M^2) host memory and an O(M^2) Python loop. It does not depend on the
-     number of latent states at all.
-
-  2. Circuit compilation and training. Here the parameters scale with M and with
-     the latent count, so this is the phase that reducing L makes cheaper.
-
-The script therefore reports, per (L, M): structure-learning time and peak host
-memory, compile time, training seconds per epoch, and peak GPU memory, so the
-binding constraint at any size is visible rather than inferred.
-
-Regions larger than the real 14,670-SNP block are built by tiling it, with an
-independent row permutation per tile. That keeps realistic linkage disequilibrium
-inside each tile and none between tiles, which is what a larger region actually
-looks like. Drawing sites independently instead would make every mutual
-information zero and produce a degenerate star-shaped tree, which is neither
-realistic nor representative of the memory a real fit needs.
-
-    python gpc_frontier.py --latents 32 --snps 8191 12287 14670 18000
-"""
+"""How large a region GPC can fit, and what lowering the latent count buys."""
 
 import argparse
 import csv

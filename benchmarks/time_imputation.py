@@ -1,20 +1,5 @@
-"""How long does imputation itself take, by each of the two routes?
-
-The scaling study covers training. This covers inference, which is the other
-half of what a user pays: imputing the 12,551 masked SNPs of the HumanOmni5Exome
-array pattern for all 1,002 held-out haplotypes of the high-coverage 1KG region.
-
-  direct   one exact conditional query against the trained circuit, no
-           artificial genomes and no external tool
-  AG panel Impute5 run against a reference panel, which is what every method
-           without tractable conditional inference must do
-
-Impute5's time excludes building the panel, which the AG route must also pay for
-(sampling artificial genomes and converting them to BCF); that is reported
-separately so the two routes can be compared either way.
-
-    python time_imputation.py
-"""
+"""Times imputation by both routes: an exact conditional query against the
+trained circuit, and Impute5 with a real reference panel."""
 
 import os
 import subprocess

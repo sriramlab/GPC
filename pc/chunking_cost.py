@@ -1,20 +1,5 @@
-"""What does splitting the HMM into chunks cost?
-
-The chain-structured HMM cannot be compiled over the full 10,000-SNP region: the
-circuit is built as one nested node object per position, and the graph traversal
-that compiles it recurses once per level, so the C stack overflows well before
-10,000. Every HMM in this work is therefore trained as contiguous chunks.
-
-A chunk boundary removes the single latent edge that would have crossed it. In a
-first-order chain all information between two positions travels along that one
-path, and it is attenuated by one multiplication by the transition matrix per
-step, so the dependence a boundary destroys is whatever the chain still carried
-across that point. This script measures the cost directly, at a sequence length
-where both models still compile: one HMM over 5,000 SNPs against two HMMs over
-2,500 SNPs each, the same chunk width used for 1KG.
-
-    python chunking_cost.py --snps 5000 --chunks 1 2 --epochs 1000
-"""
+"""Cost of training the HMM baseline in contiguous chunks rather than as one
+circuit."""
 
 import argparse
 import math

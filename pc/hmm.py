@@ -1,30 +1,5 @@
-"""Train a (chunked) HMM inside the GPC/pyjuice framework.
-
-This is the chain-structured ablation of the GPC: identical PyJuice circuit
-compilation, identical L=128 latent states, identical pseudocount and full-batch
-EM schedule, with only the latent graph swapped from the learned Chow-Liu tree
-to a chain.
-
-Performance notes (measured):
-  * An epoch costs about ``n_batches * C``, where C is one forward+backward
-    traversal of the ~2,501-layer circuit. C barely depends on the batch size
-    (1.07 s at bs=256 vs 1.09 s at bs=1024 under identical load) because the
-    traversal, not the data, dominates. Raising the batch size therefore cuts
-    epoch time close to proportionally.
-  * ``lls.mean().backward()`` scales the accumulated flows by 1/batch_size, so
-    a fixed pseudocount carries a different relative weight at a different
-    batch size. To keep the EM update equivalent to the bs=256 runs already on
-    disk, the pseudocount is scaled by REF_BATCH/batch_size
-    (``--pseudocount-mode scaled``, the default). File names keep ``ps0.005``
-    because that is the bs=256-equivalent value, which is what the paper
-    reports.
-  * Training is resumable: checkpoints are written every CKPT_EVERY epochs and
-    a restart rewinds to the last one instead of starting over.
-
-Naming conventions (unchanged -- downstream scripts depend on them):
-    model  results/{data}/{dir}/hmm/pc_{tag}_{chunk}_{split}_hmm_{n}-128_{E}epochs_ps0.005.jpc
-    log    results/{data}/{dir}/hmm/{tag}_{chunk}_{split}_hmm_{n}_128_{E}epochs_ps0.005.log
-"""
+"""Trains the chain-structured HMM baseline: an ablation of GPC with the
+latent tree replaced by a chain."""
 
 import os
 import math

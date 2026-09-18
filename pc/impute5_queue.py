@@ -1,25 +1,4 @@
-"""Run the HMM Impute5 leave-one-SNP-out sweeps in priority order.
-
-The Impute5 sweeps are the long pole of the whole HMM ablation -- roughly 12
-days of CPU across nine sweeps -- so the order they run in decides when results
-land. This driver:
-
-  * runs one sweep at a time at --workers width (they are CPU bound; two
-    concurrent sweeps just split the same cores),
-  * skips sweeps whose four model chunks are not trained yet, and re-checks, so
-    it can be started before training finishes,
-  * builds the AGs and reference panels for a sweep on demand,
-  * and preempts: if a higher-priority sweep becomes ready while a lower one is
-    running, the running sweep is stopped and resumed later. That is free
-    because impute5_loo_local.py skips SNPs whose dosage file already exists.
-
-Priority is 1KG before UKBB (main-text figures first), and within a dataset the
-baseline panel before the combined one.
-
-Usage:
-    ./impute5_queue.py                     # dry run: show plan and readiness
-    ./impute5_queue.py --run --workers 24
-"""
+"""Queues Impute5 jobs over artificial-genome reference panels."""
 
 import os
 import sys

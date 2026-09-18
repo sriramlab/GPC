@@ -1,17 +1,4 @@
-"""How far can GPC reach if you spend fewer latent states?
-
-The reported models use 128 latent states, which is the most that fits for a
-10,000-15,000 SNP region on a 24 GiB card. The circuit's sum-node parameters
-grow as L^2 per edge while the variable count enters linearly, so trading latent
-states for region size should buy a lot of M. This measures that trade directly:
-for each (L, M) it records build time, seconds per epoch, peak memory and
-parameter count, and marks the points that do not fit.
-
-Peak memory is read from torch's own allocator, so it is unaffected by anything
-else sharing the card; run on an idle GPU anyway, since the timings are not.
-
-    python latent_scaling.py --latents 32 64 128 256 --snps 2047 4095 8191
-"""
+"""Region size reachable as a function of the number of latent states."""
 
 import argparse
 import csv

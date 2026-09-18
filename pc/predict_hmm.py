@@ -1,16 +1,4 @@
-"""Direct (model-based) imputation with the chunked HMM.
-
-Same leave-one-SNP-out protocol as pc/predict.py for GPC: for every SNP, mask
-it, query the conditional P(SNP=1 | all other observed SNPs) for every test
-haplotype, and score with r^2 against the truth. Because the HMM is trained in
-4 chunks, each SNP is conditioned on the observed SNPs of its own chunk.
-
-Cost is dominated by the number of conditional queries, not the batch size, so
-the whole test set is pushed through in as few batches as fit in memory.
-
-Output is a dosage matrix (n_test x n_snps) saved as .npy; assemble_r2.py turns
-that into the R2 / R2_boot_* CSV consumed by plots/impute/plot.ipynb.
-"""
+"""Leave-one-SNP-out imputation from a chunked HMM."""
 
 import os
 import sys

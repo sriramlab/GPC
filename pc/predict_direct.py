@@ -1,17 +1,4 @@
-"""Leave-one-SNP-out direct imputation from a single (unchunked) circuit.
-
-The GPC counterpart of predict_hmm.py: for every SNP, mask it and query
-P(SNP = 1 | all other observed SNPs) for every target haplotype. GPC compiles to
-one circuit over the whole region, so unlike the chain there is no chunk loop and
-each SNP is conditioned on every other SNP.
-
-Saves the dosage matrix (n_target x n_snp) as .npy so it can be scored against
-any subset of targets afterwards; assemble_r2.py turns it into the R2 CSV.
-
-    python predict_direct.py --model .../pc_10K_8020_...jpc \
-        --test ../results/1KG/8020/data/admixed_test.txt \
-        --out  ../results/1KG/8020/hclt/gpc_8020_admixed_direct_dosages.npy
-"""
+"""Direct imputation: reads conditional probabilities straight from the circuit."""
 
 import argparse
 import os
