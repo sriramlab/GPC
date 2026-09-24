@@ -78,3 +78,11 @@ gpc_iclr_2026.pdf
 
 # Local-only: superseded diagnostics and PyJuice debugging aids
 archive/
+
+# Local-only: striking-image renders for the journal submission
+plots/make_striking_image.py
+plots/make_striking_variants.py
+plots/striking_image.png
+plots/striking_image.tif
+plots/striking_variants/
+plots/clt_cache.npz
